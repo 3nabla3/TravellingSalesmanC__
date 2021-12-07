@@ -9,7 +9,7 @@
 #include "MultiThreaded.h"
 #include "City.h"
 
-#define MT 0
+#define MT 1
 
 const int WIDTH = 640;
 const int HEIGHT = 640;
@@ -57,39 +57,17 @@ int main() {
 	glfwSwapInterval(0);
 
 	glClearColor(0.0,0.0,0.0,0.0); //dark blue
+
+	constexpr unsigned int n_cities = 9;
+	City cities[n_cities];
 #if !MT
 	int timeStep = 1000;
 	int frameCount = 0;
-	constexpr unsigned int n_cities = 9;
-	City cities[n_cities];
 	PermGen gen(n_cities);
 	double bestDistance = -1;		// invalid state that will be replaced by the first distance calculated
 	int bestPerm[n_cities];
 	float red[3] = {255.f, 0.f, 0.f};
-#else
-	constexpr unsigned int threads = 4;
-	City cities[nCities];
-//	int** bestPerms = new int*[threads];
-//	for (int t = 0; t < threads; t++){
-//		bestPerms[t] = new int[nCities];
-//	}
-	int* bestPerm = nullptr;						// array that will contain the best perm of a single thread
-	findBestPerm(cities, nCities, &bestPerm, 0, 0);
 
-	std::cout << "Outside of function" << std::endl;
-	std::cout << "Best perm: " << std::endl;
-	for (int i = 0; i < nCities; i++)
-		std::cout << bestPerm[i] << ", ";
-	std::cout << std::endl;
-
-	delete[] bestPerm;
-
-//	for (int t = 0; t < threads; t++){
-//		delete[] bestPerms[t];
-//	}
-//	delete[] bestPerms;
-
-#endif
 
 	Timer timer("Program");
 	Timer timer2("Travelling salesman");
@@ -145,6 +123,27 @@ int main() {
 	glfwTerminate();
 
 	return 0;
+
+#else
+	constexpr unsigned int THREADS = 4;
+//	int** bestPerms = new int*[threads];
+//	for (int t = 0; t < threads; t++){
+//		bestPerms[t] = new int[nCities];
+//	}
+	int* bestPerm = nullptr;						// array that will contain the best perm of a single thread
+	findBestPerm(cities, n_cities, &bestPerm, 0, 0);
+
+	std::cout << "Outside of function" << std::endl;
+	std::cout << "Best perm: " << std::endl;
+	for (int i = 0; i < n_cities; i++)
+		std::cout << bestPerm[i] << ", ";
+	std::cout << std::endl;
+
+	delete[] bestPerm;
+
+//	for (int i = 0; i < THREADS)
+
+#endif
 }
 
 
