@@ -93,7 +93,7 @@ int *PermGen::GenNextPerm() {
 	return returnArray;
 }
 
-int* PermGen::GetPerm() {
+int* PermGen::GetCurrentPerm() {
 	int* returnArray = new int[PERMSIZE];
 	memcpy(returnArray, current_perm, PERMSIZE * sizeof(unsigned int));
 	return returnArray;

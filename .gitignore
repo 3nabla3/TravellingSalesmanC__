@@ -3,3 +3,7 @@
 /cmake-build-debug/
 /cmake-build-debug-coverage/
 /.idea/
+/.vs/
+/out/
+/glfw-3.3.5.bin.WIN64/
+CMakeSettings.json

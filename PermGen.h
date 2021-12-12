@@ -22,5 +22,5 @@ public:
 	~PermGen();
 	void Reset();					// GenNextPerm() will return the first permutation again
 	int* GenPerm(); 				// Generates and returns the next permutation to give
-	int* GetPerm();
+	int* GetCurrentPerm();
 };

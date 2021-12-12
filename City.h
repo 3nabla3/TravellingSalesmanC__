@@ -54,6 +54,7 @@ double CalculateDistance(City a, City b) {
 
 // TODO: does this really need to take a return value as a ptr ?
 void CalculateTotalDistance(const City* cities, const int* perm, const unsigned int permSize, double* distance_ptr) {
+	*distance_ptr = 0.0;
 	for (int i = 0; i < permSize - 1; i++) {
 		*distance_ptr += CalculateDistance(cities[perm[i]], cities[perm[i + 1]]);
 	}
