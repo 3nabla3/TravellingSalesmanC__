@@ -46,6 +46,11 @@ struct City
 	}
 };
 
+std::ostream& operator<<(std::ostream& out, const City& c)
+{
+	return out << "X: " << c.x << "\tY: " << c.y;
+}
+
 double CalculateDistance(City a, City b) {
 	double diffXSquared = (a.x - b.x) * (a.x - b.x);
 	double diffYSquared = (a.y - b.y) * (a.y - b.y);
@@ -55,11 +60,10 @@ double CalculateDistance(City a, City b) {
 // TODO: does this really need to take a return value as a ptr ?
 void CalculateTotalDistance(const City* cities, const int* perm, const unsigned int permSize, double* distance_ptr) {
 	for (int i = 0; i < permSize - 1; i++) {
+		auto a = perm[i]; auto b = perm[i+1];
+
+		for (int i = 0; i < permSize; i++) { std::cout << cities[i] << ", " ;}
 		*distance_ptr += CalculateDistance(cities[perm[i]], cities[perm[i + 1]]);
 	}
 }
 
-std::ostream& operator<<(std::ostream& out, const City& c)
-{
-	return out << "X: " << c.x << "\tY: " << c.y;
-}
