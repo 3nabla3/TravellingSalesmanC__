@@ -3,6 +3,7 @@
 //
 #pragma once
 #include <GLFW/glfw3.h>
+#include <random>
 
 extern const unsigned int BORDER_WIDTH;
 extern const int WIDTH, HEIGHT;
@@ -59,10 +60,8 @@ double CalculateDistance(City a, City b) {
 
 // TODO: does this really need to take a return value as a ptr ?
 void CalculateTotalDistance(const City* cities, const int* perm, const unsigned int permSize, double* distance_ptr) {
+	*distance_ptr = 0.0;
 	for (int i = 0; i < permSize - 1; i++) {
-		auto a = perm[i]; auto b = perm[i+1];
-
-		for (int i = 0; i < permSize; i++) { std::cout << cities[i] << ", " ;}
 		*distance_ptr += CalculateDistance(cities[perm[i]], cities[perm[i + 1]]);
 	}
 }
