@@ -60,7 +60,7 @@ int main() {
 
 	glClearColor(0.0,0.0,0.0,0.0); //dark blue
 
-	constexpr unsigned int n_cities = 6;
+	constexpr unsigned int n_cities = 10;
 	City cities[n_cities];
 	float red[3] = { 255.f, 0.f, 0.f };
 #if !MT
