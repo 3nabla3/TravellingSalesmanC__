@@ -62,7 +62,12 @@ double CalculateDistance(City a, City b) {
 void CalculateTotalDistance(const City* cities, const int* perm, const unsigned int permSize, double* distance_ptr) {
 	*distance_ptr = 0.0;
 	for (int i = 0; i < permSize - 1; i++) {
-		*distance_ptr += CalculateDistance(cities[perm[i]], cities[perm[i + 1]]);
+		int n1 = perm[i];
+		int n2 = perm[i + 1];
+		City c1 = cities[n1];
+		City c2 = cities[n2];
+		double distance = CalculateDistance(c1, c2);
+		*distance_ptr += distance;
 	}
 }
 

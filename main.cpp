@@ -11,14 +11,14 @@
 #include "City.h"
 
 
-#define MT 1
+#define MT 0
 
 const int WIDTH = 640;
 const int HEIGHT = 640;
 
 const unsigned int BORDER_WIDTH = WIDTH * 0.1f; // makes sure cities are not too close to the edge
-
 static float DefaultColor[3] = {100.f, 100.f, 100.f};
+
 void DrawPath(City cities[], const int* perm, unsigned int permSize, float rgb[3]=DefaultColor) {
 	glColor3f(rgb[0], rgb[1], rgb[2]);
 	glBegin(GL_LINE_STRIP);
@@ -47,7 +47,7 @@ int main() {
 		return -1;
 
 	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World", nullptr, nullptr);
+	window = glfwCreateWindow(WIDTH, HEIGHT, "Shortest route between points", nullptr, nullptr);
 	if (!window)
 	{
 		glfwTerminate();
@@ -60,7 +60,7 @@ int main() {
 
 	glClearColor(0.0,0.0,0.0,0.0); //dark blue
 
-	constexpr unsigned int n_cities = 6;
+	constexpr unsigned int n_cities = 10;
 	City cities[n_cities];
 	float red[3] = { 255.f, 0.f, 0.f };
 #if !MT
@@ -127,34 +127,61 @@ int main() {
 	return 0;
 
 #else
+	// Get the number of cores in the computer
 	const unsigned int THREADS = std::thread::hardware_concurrency();
-	int** bestPerms = new int*[THREADS];
+
+	int** bestPermAddresses = new int*[THREADS]{nullptr};
+	auto* threadFinishedArray = new bool[THREADS]{false};
 	auto* threads = new std::thread[THREADS];
 
-	for (int t = 0; t < THREADS; t++){
-		threads[t] = std::thread(findBestPerm, cities, n_cities, bestPerms, THREADS, t);
+	for (unsigned int t = 0; t < THREADS; t++){
+		threads[t] = std::thread(findBestPerm, cities, n_cities, bestPermAddresses, threadFinishedArray, THREADS, t);
 	}
-
+	Timer t("Multithreading");
 	// TODO: make the threads join as the program is rendering the best running perm
-	for (int i = 0; i < THREADS; i++)
-		threads[i].join();
-
-	double bestDistance = -1;
-	int bestPermIndex = 0;
-
-	for (int t = 0; t < THREADS; t++) {
-		double distance;
-		CalculateTotalDistance(cities, bestPerms[t], n_cities, &distance);
-		if (distance < bestDistance || bestDistance == -1) {
-			bestDistance = distance;
-			bestPermIndex = t;
-		}
-	}
-
 	while (!glfwWindowShouldClose(window)) {
-		glClear(GL_COLOR);
-		DrawCitiesAndPath(cities, bestPerms[bestPermIndex], n_cities, red);
-		
+		glClear(GL_COLOR_BUFFER_BIT);
+		bool canRender = false;
+
+		bool allThreadsReadable = true;
+		for (int i = 0; i < THREADS; i++) {
+			if (bestPermAddresses[i] == nullptr) {
+				allThreadsReadable = false;
+				break;
+			}
+		}
+		if (allThreadsReadable) canRender = true;
+
+		if (canRender) {
+			double bestDistance = -1;
+			unsigned int bestPermIndex;
+			for (unsigned int i = 0; i < THREADS; i++) {
+				double distance = 0;
+
+				mtx.lock();
+				int* permAddy = bestPermAddresses[i];
+				CalculateTotalDistance(cities, permAddy, n_cities, &distance);
+				mtx.unlock();
+
+				if (distance < bestDistance | bestDistance == -1) {
+					bestDistance = distance;
+					bestPermIndex = i;
+				}
+			}
+			DrawCitiesAndPath(cities, bestPermAddresses[bestPermIndex], n_cities, red);
+
+		}
+		// Check if all threads are finished
+		bool allThreadsFinished = true;
+		for (int i = 0; i < THREADS; i++ ) {
+			if (!threadFinishedArray[i]) {
+				allThreadsFinished = false;
+				break;
+			}
+		}
+
+		if (allThreadsFinished) { t.Stop(); }
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
